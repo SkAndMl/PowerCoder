@@ -19,7 +19,7 @@ LEMMATIZER = nltk.stem.WordNetLemmatizer()
 DATASTRUCTURE_CLASSES = {"graph": 0, "array": 1, "string": 2}
 
 
-class PowerCoder:
+class PowerTagger:
 
     def __init__(self):
         """
@@ -82,10 +82,14 @@ class PowerCoder:
         self._prepare_data()
         self._vectorize()
 
-        return self.model.predict_proba(self.X)
+        return TagPrediction(self.model.predict_proba(self.X))
 
     def __call__(self, questions):
         return self.predict(questions)
 
 
+class TagPrediction:
 
+    def __init__(self, prediction_probs):
+        self.prediction_probs = prediction_probs
+        self.classes = np.argmax(prediction_probs, axis=-1)

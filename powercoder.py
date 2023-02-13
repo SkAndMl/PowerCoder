@@ -21,12 +21,23 @@ DATASTRUCTURE_CLASSES = {"graph": 0, "array": 1, "string": 2}
 
 class PowerTagger:
 
-    def __init__(self):
+    def __init__(self, vocab_size=1500, model="xgb"):
         """
-        present for namesake for now
+        Initializes the parameters of PowerTagger. The default values used, are based on the best results obtained
+        during pretraining. You can play around with them depending on the questions that are being tagged.
+        :param vocab_size: vocab size of the vectorizer to be loaded. Supported sizes: [1500]
+        :param model: The model string to be loaded. Supported models: ["rfc", "xgb"]
         """
-        self.vectorizer = pickle.load(open("models/vectorizer_model.sav", "rb"))
-        self.model = pickle.load(open("models/rfc_model.sav", "rb"))
+        self.vocab_size = vocab_size
+        try:
+            self.vectorizer = pickle.load(open(f"models/vectorizer_model_{self.vocab_size}.sav", "rb"))
+        except Exception:
+            raise ValueError(f"At present, PowerTagger does not support vocab size of {self.vocab_size}")
+
+        try:
+            self.model = pickle.load(open(f"models/{model}_model.sav", "rb"))
+        except Exception:
+            raise ValueError(f"At present, there are no models with the passed string: {model}")
 
     #    ------  DATA PREPARATION STARTS    ------
 
@@ -53,6 +64,11 @@ class PowerTagger:
 
     # noinspection PyMethodMayBeStatic
     def _lemmatization(self, text):
+        """
+        Uses WordnetLemmatizer to lemmatize the given question
+        :param text: un-lemmatized input question
+        :return: lemmatized text
+        """
         new_text = [LEMMATIZER.lemmatize(word) for word in text.split(" ")]
         return ' '.join(new_text)
 
@@ -67,16 +83,26 @@ class PowerTagger:
     # ------ PREPROCESSING STARTS ------
 
     def _vectorize(self):
+        """
+        Uses TfIdfVectorizer to generate a vector for each input
+        :return: returns a sparse array of dimensions [len(self.questions), VOCAB_SIZE]
+        """
         self.X = self.vectorizer.transform(self.questions["question"])
 
     # ------ PREPROCESSING ENDS ------
 
     def predict(self, questions):
-
+        """
+        :param questions: Pandas dataframe or series containing the questions
+        :return: TagPrediction object with the predicted probabilities
+        """
         if not isinstance(questions, pd.DataFrame) or not isinstance(questions, pd.Series):
             if not isinstance(questions, list) or not isinstance(questions, tuple):
                 questions = (questions,)
             questions = pd.DataFrame(data=questions, columns=["question"])
+
+        if "question" not in questions.columns:
+            raise ValueError("PowerTagger expects column named 'question' to contain the questions")
 
         self.questions = questions
         self._prepare_data()
@@ -93,3 +119,7 @@ class TagPrediction:
     def __init__(self, prediction_probs):
         self.prediction_probs = prediction_probs
         self.classes = np.argmax(prediction_probs, axis=-1)
+        self.max_prob = np.max(prediction_probs, axis=-1)
+
+    def __str__(self):
+        return pd.DataFrame(data={"Predicted class": self.classes, "Probability": self.max_prob})

@@ -14,9 +14,12 @@ PowerCoder requires:
 Currently PowerCoder is in it's nascent stage, with just PowerTagger being deployed.
 ### PowerTagger
 The aim of PowerTagger is to tag any coding question based on the data structure used to solve the question and the algorithms that can be used to solve that question.<br>
+
 At present, it can only tag data structure ("array", "graph" and "string") questions, but constant work is going on to add more such structure. <br>
+
 PowerTagger uses a RandomForestClassifier model for now but very soon a Distil-Bert model will be added to PowerTagger and then more transformer based models will be added.
 Based on the computation budget, the user can go for any kind of available model. <br>
+
 PowerTagger uses a TfIdfVectorizer for now, with a vocab size of 1500. TfIdfVectorizer with different vocabulary sizes, and other vectorization models will be added soon.
 
 ### PowerGenerator

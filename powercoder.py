@@ -30,12 +30,12 @@ class PowerTagger:
         """
         self.vocab_size = vocab_size
         try:
-            self.vectorizer = pickle.load(open(f"models/vectorizer_model_{self.vocab_size}.sav", "rb"))
+            self.vectorizer = pickle.load(open(f"./models/vectorizer_model_{self.vocab_size}.sav", "rb"))
         except Exception:
             raise ValueError(f"At present, PowerTagger does not support vocab size of {self.vocab_size}")
 
         try:
-            self.model = pickle.load(open(f"models/{model}_model.sav", "rb"))
+            self.model = pickle.load(open(f"./models/{model}_model.sav", "rb"))
         except Exception:
             raise ValueError(f"At present, there are no models with the passed string: {model}")
 
@@ -48,7 +48,7 @@ class PowerTagger:
            the array indexing and return a string
            :param text: question string
            :return: punctuation removed string
-            """
+        """
         new_text = "".join([t for t in text if t not in PUNCTUATION])
         return new_text
 
@@ -59,7 +59,7 @@ class PowerTagger:
            :param text: question string
            :return: stop word removed string
            """
-        new_text = [word for word in text.split(' ') if word not in STOPWORDS]
+        new_text = [word for word in text.split() if word not in STOPWORDS]
         return " ".join(new_text)
 
     # noinspection PyMethodMayBeStatic
@@ -96,12 +96,14 @@ class PowerTagger:
         :param questions: Pandas dataframe or series containing the questions
         :return: TagPrediction object with the predicted probabilities
         """
-        if not isinstance(questions, pd.DataFrame) or not isinstance(questions, pd.Series):
-            if not isinstance(questions, list) or not isinstance(questions, tuple):
+        if not (isinstance(questions, pd.DataFrame)):
+            if isinstance(questions, pd.Series):
+                questions = questions.to_frame(name="question")
+            elif not isinstance(questions, list) or not isinstance(questions, tuple):
                 questions = (questions,)
-            questions = pd.DataFrame(data=questions, columns=["question"])
+                questions = pd.DataFrame(data=questions, columns=["question"])
 
-        if "question" not in questions.columns:
+        if isinstance(questions, pd.DataFrame) and "question" not in questions.columns:
             raise ValueError("PowerTagger expects column named 'question' to contain the questions")
 
         self.questions = questions

@@ -21,7 +21,7 @@ DATASTRUCTURE_CLASSES = {"graph": 0, "array": 1, "string": 2}
 
 class PowerTagger:
 
-    def __init__(self, vocab_size=1500, model="xgb"):
+    def __init__(self, vocab_size=1500, model="xgb", n_estimator=200):
         """
         Initializes the parameters of PowerTagger. The default values used, are based on the best results obtained
         during pretraining. You can play around with them depending on the questions that are being tagged.
@@ -30,14 +30,10 @@ class PowerTagger:
         """
         self.vocab_size = vocab_size
         try:
-            self.vectorizer = pickle.load(open(f"./models/vectorizer_model_{self.vocab_size}.sav", "rb"))
+            self.model_pipeline = pickle.load(open(f"models/{model}_{n_estimator}_vect_{vocab_size}.sav", "rb"))
         except Exception:
-            raise ValueError(f"At present, PowerTagger does not support vocab size of {self.vocab_size}")
-
-        try:
-            self.model = pickle.load(open(f"./models/{model}_model.sav", "rb"))
-        except Exception:
-            raise ValueError(f"At present, there are no models with the passed string: {model}")
+            raise ValueError(f"At present, PowerTagger does not model pipeline with {n_estimator} estimators and "
+                             f"{vocab_size} max features")
 
     #    ------  DATA PREPARATION STARTS    ------
 
@@ -82,13 +78,6 @@ class PowerTagger:
 
     # ------ PREPROCESSING STARTS ------
 
-    def _vectorize(self):
-        """
-        Uses TfIdfVectorizer to generate a vector for each input
-        :return: returns a sparse array of dimensions [len(self.questions), VOCAB_SIZE]
-        """
-        self.X = self.vectorizer.transform(self.questions["question"])
-
     # ------ PREPROCESSING ENDS ------
 
     def predict(self, questions):
@@ -99,6 +88,8 @@ class PowerTagger:
         if not (isinstance(questions, pd.DataFrame)):
             if isinstance(questions, pd.Series):
                 questions = questions.to_frame(name="question")
+            elif isinstance(questions, list):
+                questions = pd.DataFrame(data=questions, columns=["question"])
             elif not isinstance(questions, list) or not isinstance(questions, tuple):
                 questions = (questions,)
                 questions = pd.DataFrame(data=questions, columns=["question"])
@@ -107,10 +98,10 @@ class PowerTagger:
             raise ValueError("PowerTagger expects column named 'question' to contain the questions")
 
         self.questions = questions
+        print("From pc,", self.questions)
         self._prepare_data()
-        self._vectorize()
 
-        return TagPrediction(self.model.predict_proba(self.X))
+        return TagPrediction(self.model_pipeline.predict_proba(self.questions["question"]))
 
     def __call__(self, questions):
         return self.predict(questions)
@@ -122,6 +113,5 @@ class TagPrediction:
         self.prediction_probs = prediction_probs
         self.classes = np.argmax(prediction_probs, axis=-1)
         self.max_prob = np.max(prediction_probs, axis=-1)
-
-    def __str__(self):
-        return pd.DataFrame(data={"Predicted class": self.classes, "Probability": self.max_prob})
+        self.results = pd.DataFrame(data={"predicted class": self.classes,
+                                          "prob": self.max_prob})

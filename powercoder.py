@@ -9,6 +9,7 @@ import numpy as np
 # nltk.download('omw-1.4')
 # nltk.download('wordnet')
 
+IDX_TO_CLASS = {0: "graph", 1: "array", 2: "string"}
 PUNCTUATION = string.punctuation
 idx_open = PUNCTUATION.index("[")
 PUNCTUATION = PUNCTUATION[:idx_open] + PUNCTUATION[idx_open + 1:]
@@ -30,7 +31,7 @@ class PowerTagger:
         """
         self.vocab_size = vocab_size
         try:
-            self.model_pipeline = pickle.load(open(f"models/{model}_{n_estimator}_vect_{vocab_size}.sav", "rb"))
+            self.model_pipeline = pickle.load(open(f"/Users/sathyakrishnansuresh/Desktop/PowerCoder-main/models/{model}_{n_estimator}_vect_{vocab_size}.sav", "rb"))
         except Exception:
             raise ValueError(f"At present, PowerTagger does not model pipeline with {n_estimator} estimators and "
                              f"{vocab_size} max features")
@@ -80,25 +81,14 @@ class PowerTagger:
 
     # ------ PREPROCESSING ENDS ------
 
-    def predict(self, questions):
+    def predict(self, question: str):
         """
         :param questions: Pandas dataframe or series containing the questions
         :return: TagPrediction object with the predicted probabilities
         """
-        if not (isinstance(questions, pd.DataFrame)):
-            if isinstance(questions, pd.Series):
-                questions = questions.to_frame(name="question")
-            elif isinstance(questions, list):
-                questions = pd.DataFrame(data=questions, columns=["question"])
-            elif not isinstance(questions, list) or not isinstance(questions, tuple):
-                questions = (questions,)
-                questions = pd.DataFrame(data=questions, columns=["question"])
-
-        if isinstance(questions, pd.DataFrame) and "question" not in questions.columns:
-            raise ValueError("PowerTagger expects column named 'question' to contain the questions")
-
-        self.questions = questions
-        print("From pc,", self.questions)
+    
+        self.questions = pd.DataFrame(data=[question], columns=["question"])
+        # print("From pc,", self.questions)
         self._prepare_data()
 
         return TagPrediction(self.model_pipeline.predict_proba(self.questions["question"]))
@@ -107,11 +97,18 @@ class PowerTagger:
         return self.predict(questions)
 
 
+# 0 - graph
+# 1 - array
+# 2 - string
+
 class TagPrediction:
 
     def __init__(self, prediction_probs):
-        self.prediction_probs = prediction_probs
-        self.classes = np.argmax(prediction_probs, axis=-1)
-        self.max_prob = np.max(prediction_probs, axis=-1)
-        self.results = pd.DataFrame(data={"predicted class": self.classes,
-                                          "prob": self.max_prob})
+        self.class_probs = {IDX_TO_CLASS[i] : [prediction_probs[0][i]] \
+                            for i in range(len(prediction_probs[0]))}
+        
+    
+    
+    
+        
+        

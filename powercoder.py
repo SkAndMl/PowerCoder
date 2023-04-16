@@ -89,6 +89,7 @@ class PowerTagger:
     
         self.questions = pd.DataFrame(data=[question], columns=["question"])
         # print("From pc,", self.questions)
+        # print("Hey")
         self._prepare_data()
 
         return TagPrediction(self.model_pipeline.predict_proba(self.questions["question"]))

@@ -4,11 +4,22 @@ distributed under the MIT License <br>
 
 The project was started and is maintained by Sathya Krishnan Suresh. It was started as a research project.
 
-## Dependiencies
+## Dependencies
 PowerCoder requires: 
 * Scikit-learn (>=1.2.0)
 * HuggingFace transformers
 * HuggingFace datasets
+
+## Example
+```python
+from powercoder import PowerTagger
+tagger = PowerTagger(vocab_size=800, model='rfc', n_estimator=400)
+qns = ["Given a sorted integer array nums and an integer n, add/patch elements to the array such that any number in the range [1, n] inclusive can be formed by the sum of some elements in the array. Return the minimum number of patches required",
+       "Given a binary array nums, return the maximum length of a contiguous subarray with an equal number of 0 and 1."]
+
+tag_preds = pt.predict(qns) # tag_preds is an instance of TagPrediction
+print(tp.results)
+```
 
 ## Features
 Currently PowerCoder is in it's nascent stage, with just PowerTagger being deployed.

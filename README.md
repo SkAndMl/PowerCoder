@@ -21,6 +21,14 @@ tag_preds = pt.predict(qns) # tag_preds is an instance of TagPrediction
 print(tp.results)
 ```
 
+## Running it 
+You can also check out the web app made available for PowerCoder.
+* Download the repository
+* Run the following command in the terminal 
+```bash
+streamlit run path/to/repo/folder/web_app.py
+```
+
 ## Features
 Currently PowerCoder is in it's nascent stage, with just PowerTagger being deployed.
 ### PowerTagger

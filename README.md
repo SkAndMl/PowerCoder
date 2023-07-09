@@ -44,5 +44,5 @@ pip install -r requirements.txt
 ## Features
 Currently PowerCoder is in it's nascent stage, with just `TfIdfProcessor` and `DSTagger` being made available.
 
-## Dedicated to
+## Dedicated
 To [Moonlight](https://github.com/Shakthi-2406)

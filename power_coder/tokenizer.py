@@ -3,10 +3,8 @@ import numpy as np
 import pandas as pd
 from typing import Union
 import pickle
-import sys
-sys.path.insert(0, "POWERCODER")
 
-class TfIdfProcessor:
+class TfIdfTokenizer:
 
     STOPWORDS = nltk.corpus.stopwords.words("english")
     WN_LEMMATIZER = nltk.stem.WordNetLemmatizer()
@@ -35,7 +33,7 @@ class TfIdfProcessor:
                 questions: Union[np.ndarray, pd.Series, pd.DataFrame],
                 col_name: str=None) -> np.ndarray:
         
-        if not (isinstance(questions, np.ndarray), isinstance(questions, pd.Series), pd.DataFrame):
+        if not (isinstance(questions, np.ndarray) or isinstance(questions, pd.Series) or isinstance(questions, pd.DataFrame)):
             raise TypeError(f"'questions' must be of type numpy.ndarray or pandas.Series or pandas.DataFrame. But it is of type {type(questions)}")
 
         if isinstance(questions, np.ndarray):
@@ -78,7 +76,7 @@ class TfIdfProcessor:
     
 
 if __name__ == "__main__":
-    tf = TfIdfProcessor()
+    tf = TfIdfTokenizer()
     vect = tf.process(np.array(["Solve this", "Solve that given this",  
                             "Given an array of size n, find sum"]))
     print(vect.toarray().shape)

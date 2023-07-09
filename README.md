@@ -11,6 +11,7 @@ PowerCoder requires:
 * Spacy
 
 ## Example
+### Tokenizer
 ```python
 from power_coder.tokenizer import TfIdfProcessor
 processor = TfIdfProcessor(casefold=True, lemmatizer=True, remove_stop_words=True)
@@ -19,6 +20,17 @@ qns = ["Given a sorted integer array nums and an integer n, add/patch elements t
 
 vectorized_qns = processor.process(np.array(qns))
 print(vectorized_qns.toarray().shape)
+```
+
+### Tagger
+```python
+from power_coder.tagger import DSTagger
+tagger = DSTagger()
+qns = ["Given a sorted integer array nums and an integer n, add/patch elements to the array such that any number in the range [1, n] inclusive can be formed by the sum of some elements in the array. Return the minimum number of patches required",
+       "Given a binary array nums, return the maximum length of a contiguous subarray with an equal number of 0 and 1."]
+
+tagged_qns = tagger.tag(np.array(qns))
+print(tagger.df)
 ```
 
 ## Running it 
@@ -30,5 +42,5 @@ pip install -r requirements.txt
 ```
 
 ## Features
-Currently PowerCoder is in it's nascent stage, with just TfIdfProcessor being made available.
+Currently PowerCoder is in it's nascent stage, with just `TfIdfProcessor` and `DSTagger` being made available.
 
